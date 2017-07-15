@@ -25,4 +25,5 @@ executable test-extensible
     , cassava
     , cassava-conduit
     , extensible
+    , lens
   default-language: Haskell2010

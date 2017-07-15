@@ -13,6 +13,7 @@ dependencies:
   - cassava
   - cassava-conduit
   - extensible
+  - lens
 
 executables:
   test-extensible:
