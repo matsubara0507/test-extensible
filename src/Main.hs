@@ -34,3 +34,13 @@ book2 = #name @= "Structure and Interpretation of Computer Programs"
      <: #isbm @= "9780262510875"
      <: #price @= 55.00
      <: emptyRecord
+
+{- no good 
+book2 :: Book
+book2 = #name @= "Structure and Interpretation of Computer Programs"
+     <: #author @= ["Harold Abelson", "Gerald Jay Sussman", "Julie Sussman"]
+     <: #date @= "July 1996"
+     <: #price @= 55.00
+     <: #isbm @= "9780262510875"
+     <: emptyRecord
+-}

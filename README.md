@@ -12,6 +12,7 @@ Haskell の extensible パッケージのテストリポジトリ
 
 ## memo
 
+* HLint とかでエラーが出てうざい
 * `(>:)` で何故か怒られる
     * LTS-8.22 にある extensible のバージョンには `(>:)` は無いため
     * Nightry-2017.7.15 は最新(extensible-0.4.2)なので変更したらいけた
@@ -20,3 +21,4 @@ Haskell の extensible パッケージのテストリポジトリ
 * `#name` のように自動生成されるレコード関数のようなのを使うには `OverloadedLabels` が必要
     * [これ](http://d.hatena.ne.jp/kazu-yamamoto/20160114/1452735514)を自動でやってくれるのね
     * lens で `hoge ^. #name` や `view #name hoge`
+* レコードのフィールドの適用順を変えてはダメ(型エラー)
