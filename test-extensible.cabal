@@ -21,9 +21,14 @@ executable test-extensible
   hs-source-dirs:
       src
   build-depends:
-      base >= 4.7 && < 5
+      aeson
+    , base >= 4.7 && < 5
     , cassava
     , cassava-conduit
+    , constraints
     , extensible
     , lens
+    , unordered-containers
+  other-modules:
+      Sample.Aeson
   default-language: Haskell2010

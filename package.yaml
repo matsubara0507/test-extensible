@@ -9,11 +9,14 @@ extra-source-files:
 - README.md
 
 dependencies:
+  - aeson
   - base >= 4.7 && < 5
   - cassava
   - cassava-conduit
+  - constraints
   - extensible
   - lens
+  - unordered-containers
 
 executables:
   test-extensible:

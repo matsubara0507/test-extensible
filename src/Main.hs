@@ -8,6 +8,7 @@ module Main where
 
 import           Control.Lens
 import           Data.Extensible
+import           Sample.Aeson
 
 main :: IO ()
 main = putStrLn "hello world"
@@ -35,7 +36,7 @@ book2 = #name @= "Structure and Interpretation of Computer Programs"
      <: #price @= 55.00
      <: emptyRecord
 
-{- no good 
+{- no good
 book2 :: Book
 book2 = #name @= "Structure and Interpretation of Computer Programs"
      <: #author @= ["Harold Abelson", "Gerald Jay Sussman", "Julie Sussman"]

@@ -42,3 +42,101 @@ Haskell の extensible パッケージのテストリポジトリ
 
 `RecordOf h '[kv]` の `h` はモナドトランスフォーマーの基底となるモナドに近い．
 `[kv]` は key-value な型レベルリスト(可変タプル)．
+
+### `map` のようなことをするには？
+
+[Data.Extensible.Class](https://hackage.haskell.org/package/extensible-0.4.2/docs/Data-Extensible-Class.html)の [`Forall`](https://hackage.haskell.org/package/extensible-0.4.2/docs/Data-Extensible-Class.html#t:Forall) を使う．
+
+```haskell
+class (ForallF c xs, Generate xs) => Forall (c :: k -> Constraint) (xs :: [k]) where
+  henumerateFor :: proxy c -> proxy' xs -> (forall x. c x => Membership xs x -> r -> r) -> r -> r
+  hgenerateListFor :: Applicative f
+    => proxy c -> (forall x. c x => Membership xs x -> f (h x)) -> f (HList h xs)
+```
+
+
+* `Forall` 型クラスは，特定の型レベルリストに型レベルの繰り返し文を与えるような型クラス
+    * インスタンスは単純に空の型レベルリストと，そうでない場合の場合分け(たぶん)  
+* `henumerateFor` は列挙する関数(？)
+    * `proxy c` は型レベルリストへの制約の型
+        * [Constraint型族](https://github.com/shiatsumat/wiwinwlh-jp/wiki/%E5%9E%8B%E6%97%8F#constraint-kinds)
+    * `proxy' xs` は型レベルリストの型
+    * `Membership xs x` 型は型レベルセット(リスト)の要素型 `x` の `xs` での位置を表すらしい
+* `hgenerateListFor` はへテロリストの生成関数(？)
+    * `h` はモナドみたいなもの
+
+繰り返しには以下の関数を使う
+
+```haskell
+-- Data.Extensible.Product
+hgenerateFor :: (Forall c xs, Applicative f)
+  => proxy c -> (forall x. c x => Membership xs x -> f (h x)) -> f (h :* xs)
+hgenerateFor p f = fmap fromHList $ hgenerateListFor p f
+```
+
+* `p` は制約
+* `f` は繰り返し処理する関数(？)
+
+例えば，`FromJSON`
+
+```haskell
+instance Forall (KeyValue KnownSymbol FromJSON) xs => FromJSON (Record xs) where
+  parseJSON = withObject "Object" $
+    \v -> hgenerateFor (Proxy :: Proxy (KeyValue KnownSymbol FromJSON)) $
+    \m -> let k = symbolVal (proxyAssocKey m) in
+      case HM.lookup (fromString k) v of
+        Just a -> Field . return <$> parseJSON a
+        Nothing -> fail $ "Missing key: " `mappend` k
+```
+
+(型が曖昧になってしまうせいか，うまく補助関数は使えない)
+
+* `withObject "Object"` ってのはタダの aeson の関数
+    * `parseJSON (Object v) = ...` と同じ
+    * マッチしなかったときの処理を規定してくれる
+* `Proxy :: Proxy (KeyValue KnownSymbol FromJSON)` が制約
+    * `KnownSymbol` が Key への制約
+        * [`KnownSymbol`](https://hackage.haskell.org/package/base-4.9.0.0/docs/GHC-TypeLits.html#t:KnownSymbol) は型レベル文字列であることを指してる
+    * `FromJSON` が Value への制約
+        * 要するに Value の型は `FromJSON` 型クラスのインスタンスであるって意味
+* 今回 `m` は Key-Value な一要素と考えれば良さそう
+    * [`proxyAssocKey`](https://hackage.haskell.org/package/extensible-0.4.2/docs/Data-Extensible-Field.html#v:proxyAssocKey)は型レベルKey-Valueから型レベル文字列(Key)を取り出す
+    * [`symbolVal`](https://hackage.haskell.org/package/base-4.9.0.0/docs/GHC-TypeLits.html#v:symbolVal)は型レベル文字列から文字列に変換する
+    * `fromString` は単純に文字列型から `Text` や `ByteString` のような `IsString` 型クラスのインスタンスの型に変換する関数
+        * aeson の `Object` 型は `HashMap Text Value` のため
+    * `Field . return :: Monad h => AssocValue kv -> Field h kv`
+
+`ToJSON` の場合
+
+```haskell
+instance Forall (KeyValue KnownSymbol ToJSON) xs => ToJSON (Record xs) where
+  toJSON = Object . HM.fromList . flip appEndo [] . hfoldMap getConst' . hzipWith
+    (\(Comp Dict) -> Const' . Endo . (:) .
+      liftA2 (,) (fromString . symbolVal . proxyAssocKey) (toJSON . getField))
+    (library :: Comp Dict (KeyValue KnownSymbol ToJSON) :* xs)
+```
+
+* `HM.fromList :: (Eq k, Hashable k) => [(k, v)] -> HashMap k v`
+* [`Endo`](https://hackage.haskell.org/package/base-4.9.1.0/docs/Data-Monoid.html#t:Endo)
+    * `newtype Endo a = Endo { appEndo :: a -> a }`
+    * ref: [Data.Monoidを眺めた·うさぎ小屋](https://kimiyuki.net/blog/2014/12/16/about-data-monoid/)
+    * e.g ` (appEndo . mconcat . map Endo) [(+ 1), (* 4), (+ 3)] 0 = (0 + 3) * 4 + 1 = 13`
+* `hzipWith :: (forall x. f x -> g x -> h x) -> (f :* xs) -> (g :* xs) -> h :* xs` : zipWith のへテロリスト版
+* `hfoldMap :: Monoid a => (forall x. h x -> a) -> (h :* xs) -> a` : `map` して `fold` のへテロリスト版
+* `newtype Const' a x = Const' { getConst' :: a }` : `const` 関数の型バージョン
+* `newtype Comp (f :: j -> *) (g :: i -> j) (a :: i) = Comp { getComp :: f (g a) }` : 関数合成を模した型
+* `library :: forall c xs. Forall c xs => Comp Dict c :* xs` : 制約辞書のへテロリスト
+    * `data Dict :: Constraint -> *`
+    * `(KeyValue KnownSymbol ToJSON) :: kv -> Constraint` かな？
+    * `(Comp Dict (KeyValue ...) :: kv -> *) :* xs` って区切り方
+    * イメージとしては `[Comp Dict]` な感じ(リストじゃなくてヘテロリストもとい Record だけど)
+* zip する関数
+    * `toJSON . getField $ v` でフィールドの値を JSON にしてる
+    * `fromString . symbolVal . proxyAssocKey` で型レベルに存在するフィールドの Key を取得し，文字列にまで変換
+    * これらをタプルに `(k, v)`
+    * `(:) (k, v)` とすることで `[(k,v)] -> [(k,v)]` の型になる
+    * コレを `Endo` 型でラップし，さらに `Const'` 型でラップ
+    * `Const'` は `hzipWith` の型と整合性を保つため
+         * `(forall x. f x -> g x -> h x)` の部分で，`x` はフィールドだと思えばいい
+* `Endo ([(k,v)] -> [(k,v)])` 型のラップした関数だけ `getConst'` で取り出し，`Endo` 型を畳み込む(関数合成)
+* `flip appEndo []` で空のリストに適用し，`HM.fromList` でハッシュマップに変換し，`Object` でラップ   
