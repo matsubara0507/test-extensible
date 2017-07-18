@@ -140,3 +140,21 @@ instance Forall (KeyValue KnownSymbol ToJSON) xs => ToJSON (Record xs) where
          * `(forall x. f x -> g x -> h x)` の部分で，`x` はフィールドだと思えばいい
 * `Endo ([(k,v)] -> [(k,v)])` 型のラップした関数だけ `getConst'` で取り出し，`Endo` 型を畳み込む(関数合成)
 * `flip appEndo []` で空のリストに適用し，`HM.fromList` でハッシュマップに変換し，`Object` でラップ   
+
+### cassave の Csv をやってみる
+
+* `ToJSON` と `FromJSON` をそのままで結構できる
+* ただし，Header の無い CSV からの変換対応型クラス `FromCsv` はお手上げ
+    * レコードに依存しないやり方が分からない
+    * `[Int]` と `zip` みたいなことしたいけど，実体のない状態ではできそうにない...
+* `Forall (KeyValue c1 c2) xs` の `c1` や `c2` に何でもいいという制約はどうやって渡すんだろうか？？
+
+```haskell
+>> import Data.Csv
+>> import Data.Vector
+>> :t either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2] :: Vector Book
+either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2] :: Vector Book
+  :: Vector Book
+>> either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2] :: Vector Book
+[name @= "Type and Programming Language" <: author @= ["Benjamin C. Pierce"] <: date @= "January 2002" <: isbm @= "9780262162098" <: price @= 95.0 <: nil,name @= "Structure and Interpretation of Computer Programs" <: author @= ["Harold Abelson","Gerald Jay Sussman","Julie Sussman"] <: date @= "July 1996" <: isbm @= "9780262510875" <: price @= 55.0 <: nil]
+``` 

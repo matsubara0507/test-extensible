@@ -11,12 +11,14 @@ extra-source-files:
 dependencies:
   - aeson
   - base >= 4.7 && < 5
+  - bytestring
   - cassava
   - cassava-conduit
   - constraints
   - extensible
   - lens
   - unordered-containers
+  - vector
 
 executables:
   test-extensible:
