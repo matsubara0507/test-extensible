@@ -162,10 +162,10 @@ either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2]
 ### Tangle !!!
 
 - Monadic な処理でフィールドを構築したいとき
-    - フィールド `("hoge" >: Hoge)` 用の型クラスを定義して各フィールドのインスタンスを作る
-    - それを `hgenerateFor` して合わせる
+    - フィールド `("hoge" >: Hoge)` 用の型クラスを定義して各フィールドのインスタンスを作る
+    - それを `hgenerateFor` して合わせる
 - さらにフィールドごとに依存関係が欲しいとき
-    - **Tangle を使う！**
-    - `lesso` 関数でフィールドの値を呼び出せる
+    - **Tangle を使う！**
+    - `lesso` 関数でフィールドの値を呼び出せる
 - このあたりには `PolyKinds` 拡張が要る
 
