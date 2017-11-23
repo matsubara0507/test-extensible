@@ -158,3 +158,14 @@ either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2]
 >> either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2] :: Vector Book
 [name @= "Type and Programming Language" <: author @= ["Benjamin C. Pierce"] <: date @= "January 2002" <: isbm @= "9780262162098" <: price @= 95.0 <: nil,name @= "Structure and Interpretation of Computer Programs" <: author @= ["Harold Abelson","Gerald Jay Sussman","Julie Sussman"] <: date @= "July 1996" <: isbm @= "9780262510875" <: price @= 55.0 <: nil]
 ``` 
+
+### Tangle !!!
+
+- Monadic な処理でフィールドを構築したいとき
+    - フィールド `("hoge" >: Hoge)` 用の型クラスを定義して各フィールドのインスタンスを作る
+    - それを `hgenerateFor` して合わせる
+- さらにフィールドごとに依存関係が欲しいとき
+    - **Tangle を使う！**
+    - `lesso` 関数でフィールドの値を呼び出せる
+- このあたりには `PolyKinds` 拡張が要る
+
