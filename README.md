@@ -9,6 +9,8 @@ Haskell の extensible パッケージのテストリポジトリ
 - [extensible: Extensible, efficient, optics-friendly data types and effects | Hackage](https://hackage.haskell.org/package/extensible)
 - [割とすぐに始められるextensibleチュートリアル(レコード編) - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2016/10/10/000011)
 - [波打たせるものの正体(エクステンシブル・タングル) - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2016/12/18/181540)
+- [ぼくのかんがえた最強の拡張可能レコード - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2015/01/21/175227)
+     - 少し古いけど分かりやすい
 
 ## memo
 
@@ -170,3 +172,65 @@ either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2]
     - `lesso` 関数でフィールドの値を呼び出せる
 - このあたりには `PolyKinds` 拡張が要る
 
+### Variant 
+
+[拡張可能な直和型っぽい](https://hackage.haskell.org/package/extensible/docs/Data-Extensible-Sum.html)
+
+```haskell
+>> type Color = Variant '[ "rgb" >: (Int,Int,Int), "cmyk" >: (Int,Int,Int,Int) ]
+>> color1 = embed $ #rgb @= (0 :: Int, 0 :: Int, 0 :: Int) :: Color
+>> color1
+EmbedAt $(mkMembership 0) (rgb @= (0,0,0))
+>> color2 = embedAssoc $ #cmyk @= (0,0,0,0) :: Color
+>> color2
+EmbedAt $(mkMembership 1) (cmyk @= (0,0,0,0))
+```
+
+`embed $ #rgb @= (0,0,0) :: Color` ってできないのは `0` が `Integer` になるから？？
+こんなエラーが出る
+
+```Haskell
+>> color1 = embed $ #rgb @= (0,0,0) :: Color
+
+<interactive>:29:10: error:
+    ? Couldn't match type ‘'Missing
+                             ("rgb" ':> (Integer, Integer, Integer))’
+                     with ‘'Expecting pos0’
+        arising from a use of ‘embed’
+    ? In the expression: embed $ #rgb @= (0, 0, 0) :: Color
+      In an equation for ‘color1’:
+          color1 = embed $ #rgb @= (0, 0, 0) :: Color
+```
+
+### Inclution
+
+`xs ⊆ ys` が[定義されてまして](https://hackage.haskell.org/package/extensible/docs/Data-Extensible-Inclusion.html)，おそらく「｀ys｀ は ｀xs｀ が持つフィールドをすべて持ってる」って感じの意味だと思う．
+その型クラスに関する関数に ｀shrink｀ と ｀spread｀ がありまして，`shrink` は直積型を，`spread` は直和型をまさに拡張可能に変換してくれる(笑)
+
+```haskell
+>> :set -XOverloadedLabels -XOverloadedStrings -XDataKinds -XTypeOperators
+>> :m Data.Extensible Data.Text
+>> type A = Record '[ "name" >: Text, "age" >: Int ]
+>> type B = Record '[ "name" >: Text, "age" >: Int, "isHuman" >: Bool ]
+>> person1 = #name @= "Alise" <: #age @= 18 <: emptyRecord :: A
+>> person2 = #name @= "Alise" <: #age @= 18 <: #isHuman @= True <: emptyRecord :: B
+>> person1' = shrink $ person2 :: A
+>> person1
+name @= "Alise" <: age @= 18 <: nil
+>> person2' = shrink $ #isHuman @= True <: person1 :: B
+>> person2'
+name @= "Alise" <: age @= 18 <: isHuman @= True <: nil
+```
+
+`Color` 型は Variant のときのを使ってる
+
+```haskell
+>> type RGB = Variant '[ "rgb" >: (Int,Int,Int) ]
+>> type CMYK = Variant '[ "cmyk" >: (Int,Int,Int,Int) ]
+>> color3 = embed $ #rgb @= (0 :: Int, 0 :: Int, 0 :: Int) :: RGB
+>> color4 = embedAssoc $ #cmyk @= (0,0,0,0) :: CMYK
+>> color1' = spread color3 :: Color
+>> color2' = spread color4 :: Color
+```
+
+すごい(笑)
