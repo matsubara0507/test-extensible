@@ -204,8 +204,8 @@ EmbedAt $(mkMembership 1) (cmyk @= (0,0,0,0))
 
 ### Inclution
 
-`xs ⊆ ys` が[定義されてまして](https://hackage.haskell.org/package/extensible/docs/Data-Extensible-Inclusion.html)，おそらく「｀ys｀ は ｀xs｀ が持つフィールドをすべて持ってる」って感じの意味だと思う．
-その型クラスに関する関数に ｀shrink｀ と ｀spread｀ がありまして，`shrink` は直積型を，`spread` は直和型をまさに拡張可能に変換してくれる(笑)
+`xs ⊆ ys` が[定義されてまして](https://hackage.haskell.org/package/extensible/docs/Data-Extensible-Inclusion.html)，おそらく「`ys` は `xs` が持つフィールドをすべて持ってる」って感じの意味だと思う．
+その型クラスに関する関数に `shrink` と `spread` がありまして，`shrink` は直積型を，`spread` は直和型をまさに拡張可能に変換してくれる(笑)
 
 ```haskell
 >> :set -XOverloadedLabels -XOverloadedStrings -XDataKinds -XTypeOperators
