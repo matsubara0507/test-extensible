@@ -20,6 +20,13 @@ newtype Circle =
   Circle (Record '[ "mid" >: Point, "r" >: Double ]) deriving (Show, Eq)
 newtype Rect =
   Rect (Record '[ "ll" >: Point, "ur" >: Point ]) deriving (Show, Eq)
+-- newtype Triangle = Triangle (Point, Point, Point)
+
+-- type Shape = Variant
+--   '[ "circle" >: Circle
+--    , "rect" >: Rect
+--    , "triangle" >: Triangle
+--    ]
 
 type Shape = Variant
   '[ "circle" >: Circle
@@ -38,8 +45,8 @@ shape2 = embedAssoc $ #rect @= Rect
    <: #ur @= (#x @= 2 <: #y @= 3 <: nil)
    <: nil)
 
-area :: Shape -> Double
-area = matchField
+area' :: Shape -> Double
+area' = matchField
     $ #circle @= (\(Circle s) -> pi * (s ^. #r) ^ 2)
    <: #rect   @= ((*) <$> width <*> height)
    <: nil
@@ -47,6 +54,24 @@ area = matchField
 width, height :: Rect -> Double
 width  (Rect s) = abs $ s ^. #ur ^. #x - s ^. #ll ^. #x
 height (Rect s) = abs $ s ^. #ur ^. #y - s ^. #ll ^. #y
+
+class Area a where
+  area :: a -> Double
+
+instance Area Circle where
+  area (Circle s) = pi * (s ^. #r) ^ 2
+
+instance Area Rect where
+  area = (*) <$> width <*> height
+
+-- instance Area Triangle where
+--   area (Triangle (p1, p2, p3)) =
+--     abs ((p1 ^. #x - p3 ^. #x) * (p2 ^. #y - p3 ^. #y) - (p2 ^. #x - p3 ^. #x) * (p1 ^. #y - p3 ^. #y)) / 2
+
+instance Forall (KeyValue KnownSymbol Area) xs => Area (Variant xs) where
+  area = matchField $
+    htabulateFor (Proxy :: Proxy (KeyValue KnownSymbol Area)) $
+      \_ -> Field (Match $ area . runIdentity)
 
 addPoint :: Point -> Point -> Point
 addPoint p1 p2 = p1 & #x +~ (p2 ^. #x) & #y +~ (p2 ^. #y)
@@ -66,10 +91,10 @@ instance Nudge Rect where
 -- Match :: (h x -> r) -> Match h r x
 -- Field :: h (AssocValue kv) -> Field h kv
 -- embed :: h x -> h |: xs
-instance Forall (KeyValue KnownSymbol Nudge) xs => Nudge (Variant xs)  where
+instance Forall (KeyValue KnownSymbol Nudge) xs => Nudge (Variant xs) where
   nudge s p = flip matchField s $
     htabulateFor (Proxy :: Proxy (KeyValue KnownSymbol Nudge)) $
-      \m -> Field (Match $ EmbedAt m . Field . fmap (flip nudge p))
+      \m -> Field (Match $ EmbedAt m . Field . fmap (`nudge` p))
       -- \m -> Field (Match (\(Identity x) -> EmbedAt m (Field $ Identity $ nudge x p)))
 
 nudge' :: Shape -> Point -> Shape
