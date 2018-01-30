@@ -1,0 +1,5 @@
+:set prompt ">> "
+:set -XDataKinds
+:set -XTypeOperators
+:set -XOverloadedLabels
+:set -XOverloadedStrings
