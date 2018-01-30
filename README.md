@@ -159,7 +159,7 @@ either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2]
   :: Vector Book
 >> either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2] :: Vector Book
 [name @= "Type and Programming Language" <: author @= ["Benjamin C. Pierce"] <: date @= "January 2002" <: isbm @= "9780262162098" <: price @= 95.0 <: nil,name @= "Structure and Interpretation of Computer Programs" <: author @= ["Harold Abelson","Gerald Jay Sussman","Julie Sussman"] <: date @= "July 1996" <: isbm @= "9780262510875" <: price @= 55.0 <: nil]
-``` 
+```
 
 ### Tangle !!!
 
@@ -172,7 +172,7 @@ either error snd $ decodeByName $ encodeByName (headerOrder book1) [book1,book2]
     - `lesso` 関数でフィールドの値を呼び出せる
 - このあたりには `PolyKinds` 拡張が要る
 
-### Variant 
+### Variant
 
 [拡張可能な直和型っぽい](https://hackage.haskell.org/package/extensible/docs/Data-Extensible-Sum.html)
 
@@ -200,6 +200,17 @@ EmbedAt $(mkMembership 1) (cmyk @= (0,0,0,0))
     ? In the expression: embed $ #rgb @= (0, 0, 0) :: Color
       In an equation for ‘color1’:
           color1 = embed $ #rgb @= (0, 0, 0) :: Color
+```
+
+#### 拡張可能直和型でパターンマッチ
+
+[書いた](/src/Sample/Variant.hs)
+
+```Haskell
+>> area shape2
+6.0
+>> nudge shape1 (#x @= 1 <: #y @= 2 <: nil)
+EmbedAt $(mkMembership 0) (circle @= Circle (mid @= (x @= 2.0 <: y @= 4.0 <: nil) <: r @= 2.0 <: nil))
 ```
 
 ### Inclution
