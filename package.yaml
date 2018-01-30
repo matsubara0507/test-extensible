@@ -19,6 +19,8 @@ dependencies:
   - lens
   - unordered-containers
   - vector
+  - ghc-prim
+  - text
 
 executables:
   test-extensible:
