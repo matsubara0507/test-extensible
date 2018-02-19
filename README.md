@@ -245,3 +245,48 @@ name @= "Alise" <: age @= 18 <: isHuman @= True <: nil
 ```
 
 すごい(笑)
+
+### use-case: レコードのフィール名だけ取り出す
+
+拡張可能レコードの値は要らないので `henumerateFor` 関数を使う．
+`Record xs` の `xs` を `Proxy xs` として要求されるので
+
+```haskell
+type Book = Record BookFields
+
+type BookFields = 
+    '[ "name" >: String
+     , "authors" >: [String]
+     , "date" >: String
+     , "isbm" >: String
+     , "price" >: Float
+     ]
+```
+
+を定義(`Book` から `BookFields` を取り出す type family も無いみたいだし)．
+
+```
+>> henumerateFor (Proxy :: Proxy (KeyValue KnownSymbol Show)) (Proxy :: Proxy BookFields) ((:) . symbolVal . proxyAssocKey) []
+["name","authors","date","isbm","price"]
+```
+
+`Show` なんて本質的に関係ないけど致し方ない．
+
+```
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE UndecidableSuperClasses #-}
+
+class pk (AssocKey kv) => KeyConstraint pk kv where
+instance pk k => KeyConstraint pk (k ':> v)
+```
+
+って感じの型クラスがあるとなくせるんだけどな．
+
+```
+>> henumerateFor (Proxy :: Proxy (KeyConstraint KnownSymbol)) (Proxy :: Proxy BookFields) ((:) . symbolVal . proxyAssocKey) []
+["name","authors","date","isbm","price"]
+```
