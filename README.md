@@ -272,7 +272,7 @@ type BookFields =
 
 `Show` なんて本質的に関係ないけど致し方ない．
 
-```
+```haskell
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
