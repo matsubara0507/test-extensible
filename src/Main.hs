@@ -8,7 +8,6 @@ module Main where
 
 import           Control.Lens
 import           Data.Extensible
-import           Sample.Aeson
 import           Sample.Csv
 
 main :: IO ()
