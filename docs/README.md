@@ -8,13 +8,13 @@ Haskell の extensible パッケージのメモ書き集です。
 
 以下を参照
 
-- [extensible: Extensible, efficient, optics-friendly data types and effects | Hackage](https://hackage.haskell.org/package/extensible)
+- [extensible: Extensible, efficient, optics-friendly data types and effects｜Hackage](https://hackage.haskell.org/package/extensible)
 - [快速のExtensible effects - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2017/08/02/230422)
 - [割とすぐに始められるextensibleチュートリアル(レコード編) - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2016/10/10/000011)
 - [波打たせるものの正体(エクステンシブル・タングル) - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2016/12/18/181540)
 - [ぼくのかんがえた最強の拡張可能レコード - モナドとわたしとコモナド](http://fumieval.hatenablog.com/entry/2015/01/21/175227)
      - 少し古いけど分かりやすい
-- [extensible - School of Haskell | School of Haskell](https://www.schoolofhaskell.com/user/fumieval/extensible)
+- [extensible - School of Haskell｜School of Haskell](https://www.schoolofhaskell.com/user/fumieval/extensible)
 
 また，ぼくもいくつか記事を投稿しています．
 
